@@ -68,6 +68,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const deleteShortURL = req.params.shortURL;
   delete urlDatabase[deleteShortURL];
   res.redirect("/urls");
+});
+
+app.post("/urls/:id", (req, res) => {
+  const shortID = req.params.id;
+  const newLongURL = req.body.longURL;
+  urlDatabase[shortID] = newLongURL;
+  res.redirect("/urls");
 })
 
 app.listen(PORT, () => {
