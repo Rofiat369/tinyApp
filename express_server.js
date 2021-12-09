@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser')
+const bcrypt = require('bcryptjs')
 
 app.set("view engine", "ejs");
 
@@ -22,12 +23,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur")
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk")
   }
 }
 
@@ -159,10 +160,11 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const newID = generateRandomString()
+  const newID = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  if(email === '' || password === ''){
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  if(email === '' || bcrypt.compareSync(password, hashedPassword) === ''){
     res.status(400).send("You did not enter an email or password");
     }
   if (findUserByEmail(users,email)) {
@@ -210,8 +212,9 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const user = findUserByEmail(users, email);
+  const hashPassword = bcrypt.hashSync(password, 10)
   if(user){
-    if(checkPassword(user, password)){
+    if(checkPassword(user, password||hashPassword)){
       res.cookie("user_id", user.id);
     } else {
       res.status(403).send("Password Incorrect")
